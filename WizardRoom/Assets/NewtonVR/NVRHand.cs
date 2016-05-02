@@ -635,7 +635,7 @@ namespace NewtonVR
             Transform eyeCamera = FindObjectOfType<SteamVR_Camera>().GetComponent<Transform>();
             // The referece point for the camera is two levels up from the SteamVR_Camera
             HeadsetCameraRig = eyeCamera.parent.parent;
-            HeadsetCameraRigInitialYPosition = HeadsetCameraRig.transform.position.y;
+            HeadsetCameraRigInitialYPosition = HeadsetCameraRig.transform.position.y - Terrain.activeTerrain.SampleHeight(HeadsetCameraRig.transform.position);
         }
 
         void SetPointerTransform(float setLength, float setThicknes)
