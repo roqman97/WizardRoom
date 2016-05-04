@@ -9,31 +9,8 @@ namespace NewtonVR
 {
     public class NVRHand : MonoBehaviour
     {
-        /* Teleport Variables */
 
-        public Color pointerColor;
-        public float pointerThickness = 0.002f;
-        public AxisType pointerFacingAxis = AxisType.ZAxis;
-        public float pointerLength = 100f;
-        public bool showPointerTip = true;
-        public bool teleportWithPointer = true;
-        public float blinkTransitionSpeed = 0.6f;
-
-        private GameObject pointerHolder;
-        private GameObject pointer;
-        private GameObject pointerTip;
-
-        private Vector3 pointerTipScale = new Vector3(0.05f, 0.05f, 0.05f);
-
-        private float pointerContactDistance = 0f;
-        private Transform pointerContactTarget = null;
-
-        private Transform HeadsetCameraRig;
-        private float HeadsetCameraRigInitialYPosition;
-        private Vector3 TeleportLocation;
-
-        //end
-
+        public VRControllerState_t controllerState;
 
         private Valve.VR.EVRButtonId HoldButton = EVRButtonId.k_EButton_Grip;
         public bool HoldButtonDown = false;
@@ -108,6 +85,9 @@ namespace NewtonVR
             }
         }
 
+        public event ClickedEventHandler TouchPadClicked;
+        public event ClickedEventHandler TouchPadUnclicked;
+
 
         protected virtual void Awake()
         {
@@ -160,11 +140,6 @@ namespace NewtonVR
             UseButtonUp = Inputs[UseButton].PressUp;
             UseButtonAxis = Inputs[UseButton].SingleAxis;
 
-            TouchButtonPressed = Inputs[TouchButton].IsPressed;
-            TouchButtonDown = Inputs[TouchButton].PressDown;
-            TouchButtonUp = Inputs[TouchButton].PressUp;
-            TouchButtonAxis = Inputs[TouchButton].SingleAxis;
-
             if (HoldButtonUp)
             {
                 VisibilityLocked = false;
@@ -192,7 +167,6 @@ namespace NewtonVR
                 UpdateVisibilityAndColliders();
             }
 
-            UpdatePointer();
         }
 
         private void UpdateVisibilityAndColliders()
@@ -571,10 +545,8 @@ namespace NewtonVR
 
             CurrentHandState = HandState.Idle;
 
-            //for Teleporting and pointing
-            InitPointer();
-            InitHeadsetReferencePoint();
-            //end
+
+
         }
 
         public void ForceGhost()
@@ -594,152 +566,9 @@ namespace NewtonVR
                 return this.GetComponentInChildren<SteamVR_RenderModel>().renderModelName;
             }
         }
-
-        /* Everything after this is my shitty teleport attempt
-         **********************************************************
-         **********************************************************/
-
-
-        void InitPointer()
-        {
-            Material newMaterial = new Material(Shader.Find("Unlit/Color"));
-            newMaterial.SetColor("_Color", pointerColor);
-
-            pointerHolder = new GameObject();
-            pointerHolder.transform.parent = this.transform;
-            pointerHolder.transform.localPosition = Vector3.zero;
-
-            pointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            pointer.transform.parent = pointerHolder.transform;
-            pointer.GetComponent<MeshRenderer>().material = newMaterial;
-
-            pointer.GetComponent<BoxCollider>().isTrigger = true;
-            pointer.AddComponent<Rigidbody>().isKinematic = true;
-            pointer.layer = 2;
-
-            pointerTip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            pointerTip.transform.parent = pointerHolder.transform;
-            pointerTip.GetComponent<MeshRenderer>().material = newMaterial;
-            pointerTip.transform.localScale = pointerTipScale;
-
-            pointerTip.GetComponent<SphereCollider>().isTrigger = true;
-            pointerTip.AddComponent<Rigidbody>().isKinematic = true;
-            pointerTip.layer = 2;
-
-            SetPointerTransform(pointerLength, pointerThickness);
-            TogglePointer(false);
-        }
-
-        void InitHeadsetReferencePoint()
-        {
-            Transform eyeCamera = FindObjectOfType<SteamVR_Camera>().GetComponent<Transform>();
-            // The referece point for the camera is two levels up from the SteamVR_Camera
-            HeadsetCameraRig = eyeCamera.parent.parent;
-            HeadsetCameraRigInitialYPosition = HeadsetCameraRig.transform.position.y - Terrain.activeTerrain.SampleHeight(HeadsetCameraRig.transform.position);
-        }
-
-        void SetPointerTransform(float setLength, float setThicknes)
-        {
-            //if the additional decimal isn't added then the beam position glitches
-            float beamPosition = setLength / (2 + 0.00001f);
-
-            if (pointerFacingAxis == AxisType.XAxis)
-            {
-                pointer.transform.localScale = new Vector3(setLength, setThicknes, setThicknes);
-                pointer.transform.localPosition = new Vector3(beamPosition, 0f, 0f);
-                pointerTip.transform.localPosition = new Vector3(setLength - (pointerTip.transform.localScale.x / 2), 0f, 0f);
-            }
-            else
-            {
-                pointer.transform.localScale = new Vector3(setThicknes, setThicknes, setLength);
-                pointer.transform.localPosition = new Vector3(0f, 0f, beamPosition);
-                pointerTip.transform.localPosition = new Vector3(0f, 0f, setLength - (pointerTip.transform.localScale.z / 2));
-            }
-
-            /*
-            Vector3 pos = pointer.transform.localPosition;
-            pos.y = Terrain.activeTerrain.SampleHeight(pointerTip.transform.position);
-            pointerTip.transform.position = pos;
-            */
-            TeleportLocation = pointerTip.transform.position;
-        }
-
-        float GetPointerBeamLength(bool hasRayHit, RaycastHit collidedWith)
-        {
-            float actualLength = pointerLength;
-
-            //reset if beam not hitting or hitting new target
-            if (!hasRayHit || (pointerContactTarget && pointerContactTarget != collidedWith.transform))
-            {
-                pointerContactDistance = 0f;
-                pointerContactTarget = null;
-            }
-
-            //check if beam has hit a new target
-            if (hasRayHit)
-            {
-                if (collidedWith.distance <= 0)
-                {
-
-                }
-                pointerContactDistance = collidedWith.distance;
-                pointerContactTarget = collidedWith.transform;
-            }
-
-            //adjust beam length if something is blocking it
-            if (hasRayHit && pointerContactDistance < pointerLength)
-            {
-                actualLength = pointerContactDistance;
-            }
-
-            return actualLength; ;
-        }
-
-        void TogglePointer(bool state)
-        {
-            pointer.gameObject.SetActive(state);
-            bool tipState = (showPointerTip ? state : false);
-            pointerTip.gameObject.SetActive(tipState);
-        }
-
-        void Teleport()
-        {
-            SteamVR_Fade.Start(Color.black, 0);
-            SteamVR_Fade.Start(Color.clear, blinkTransitionSpeed);
-            HeadsetCameraRig.position = new Vector3(TeleportLocation.x, HeadsetCameraRigInitialYPosition + TeleportLocation.y, TeleportLocation.z);
-        }
-
-
-        void UpdatePointer()
-        {
-            if (TouchButtonDown)
-            {
-                TogglePointer(true);
-            }
-
-            if (TouchButtonUp)
-            {
-                if (pointerContactTarget != null && teleportWithPointer)
-                {
-                    Teleport();
-                }
-                TogglePointer(false);
-            }
-
-            if (pointer.gameObject.activeSelf)
-            {
-                Ray pointerRaycast = new Ray(transform.position, transform.forward);
-                RaycastHit pointerCollidedWith;
-                bool rayHit = Physics.Raycast(pointerRaycast, out pointerCollidedWith);
-                float pointerBeamLength = GetPointerBeamLength(rayHit, pointerCollidedWith);
-                SetPointerTransform(pointerBeamLength, pointerThickness);
-            }
-        }
-
-        /* End of teleport*/
+ 
     }
-
-
+    
     public enum VisibilityLevel
     {
         Invisible = 0,
@@ -754,12 +583,4 @@ namespace NewtonVR
         GripDownNotInteracting,
         GripDownInteracting,
     }
-
-    //this is part of teleport code
-    public enum AxisType
-    {
-        XAxis,
-        ZAxis
-    }
-    
 }

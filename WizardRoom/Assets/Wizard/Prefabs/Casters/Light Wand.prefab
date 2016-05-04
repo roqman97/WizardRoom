@@ -26,7 +26,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 415770}
   - 54: {fileID: 5420558}
-  - 114: {fileID: 11479960}
+  - 114: {fileID: 11482204}
   m_Layer: 0
   m_Name: Light Wand
   m_TagString: Untagged
@@ -61,8 +61,8 @@ GameObject:
   m_Component:
   - 4: {fileID: 443988}
   - 33: {fileID: 3379382}
-  - 65: {fileID: 6599788}
   - 23: {fileID: 2310592}
+  - 108: {fileID: 10849328}
   m_Layer: 0
   m_Name: FirePoint
   m_TagString: Untagged
@@ -94,7 +94,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 101978}
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000016292068}
+  m_LocalRotation: {x: 0.000000028290886, y: 0.9848078, z: 0.17364822, w: -0.00000016044557}
   m_LocalPosition: {x: 0, y: -0.4, z: 0}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children: []
@@ -107,7 +107,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 106880}
   m_LocalRotation: {x: 0.49999958, y: 0.4999993, z: 0.50000066, w: 0.50000054}
-  m_LocalPosition: {x: 147.571, y: 0.52, z: 140.432}
+  m_LocalPosition: {x: 125.889114, y: 2.82, z: 376.12906}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_Children:
   - {fileID: 460830}
@@ -123,7 +123,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 133652}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000016292068}
-  m_LocalPosition: {x: 0, y: -0.4, z: -1.5}
+  m_LocalPosition: {x: 0, y: -0.4, z: -1.9}
   m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children: []
   m_Father: {fileID: 415770}
@@ -311,19 +311,40 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!65 &6599788
-BoxCollider:
+--- !u!108 &10849328
+Light:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 133652}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &11479960
+  m_Enabled: 1
+  serializedVersion: 6
+  m_Type: 2
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 1.5
+  m_Range: 5.17
+  m_SpotAngle: 30
+  m_CookieSize: 10
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_Lightmapping: 4
+  m_BounceIntensity: 1
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_AreaSize: {x: 1, y: 1}
+--- !u!114 &11482204
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -331,20 +352,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 106880}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 069b5d9b6ab29324bbd4ec35a1aa886a, type: 3}
+  m_Script: {fileID: 11500000, guid: f670ddc5077246440882756337242caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Rigidbody: {fileID: 0}
   CanAttach: 1
   DisableKinematicOnAttach: 1
   EnableKinematicOnDetach: 0
-  DropDistance: 3
+  DropDistance: 1
   EnableGravityOnDetach: 1
   AttachedHand: {fileID: 0}
   InteractionPoint: {fileID: 405690}
-  BulletPrefab: {fileID: 188422, guid: 7ec8d36e5bc41774588ca2c09777bc63, type: 2}
+  SpellPrefab: {fileID: 110224, guid: 86c9631bdb8edde48b3bb1c2abdcd8d9, type: 2}
   FirePoint: {fileID: 443988}
-  BulletForce: {x: 0, y: 0, z: -50}
+  SpellForce: {x: 0, y: 0, z: -500}
+  castLights: 0
+  maxLights: 5
 --- !u!136 &13696930
 CapsuleCollider:
   m_ObjectHideFlags: 1
